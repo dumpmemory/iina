@@ -64,8 +64,12 @@ class VideoView: NSView {
     autoresizingMask = [.width, .height]
     wantsBestResolutionOpenGLSurface = true
 
+    // HDR
+    wantsExtendedDynamicRangeOpenGLSurface = true
+
     // dragging init
     registerForDraggedTypes([.nsFilenames, .nsURL, .string])
+    
   }
   
   convenience init(frame: CGRect, player: PlayerCore) {
@@ -221,8 +225,11 @@ class VideoView: NSView {
       actualFps = 60;
     }
     player.mpv.setDouble(MPVOption.Video.displayFps, actualFps)
-    
-    setICCProfile(displayId)
+  
+    // HDR
+    // TODO: all HDR code must be moved here
+    // TODO: uncomment this
+//    setICCProfile(displayId)
     currentDisplay = displayId
   }
 

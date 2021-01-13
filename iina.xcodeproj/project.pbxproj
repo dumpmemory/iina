@@ -2464,7 +2464,6 @@
 				"${BUILT_PRODUCTS_DIR}/Just/Just.framework",
 				"${BUILT_PRODUCTS_DIR}/PromiseKit/PromiseKit.framework",
 				"${PODS_ROOT}/Sparkle/Sparkle.framework",
-				"${PODS_ROOT}/Sparkle/Sparkle.framework.dSYM",
 			);
 			name = "[CP] Embed Pods Frameworks";
 			outputPaths = (
@@ -2473,7 +2472,6 @@
 				"${TARGET_BUILD_DIR}/${FRAMEWORKS_FOLDER_PATH}/Just.framework",
 				"${TARGET_BUILD_DIR}/${FRAMEWORKS_FOLDER_PATH}/PromiseKit.framework",
 				"${TARGET_BUILD_DIR}/${FRAMEWORKS_FOLDER_PATH}/Sparkle.framework",
-				"${DWARF_DSYM_FOLDER_PATH}/Sparkle.framework.dSYM",
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
@@ -3809,7 +3807,7 @@
 					"$(SRCROOT)/deps/lib",
 					"$(PROJECT_DIR)/deps/lib",
 				);
-				MACOSX_DEPLOYMENT_TARGET = 10.11;
+				MACOSX_DEPLOYMENT_TARGET = 10.15;
 				MARKETING_VERSION = 1.1.2;
 				MODULEMAP_FILE = module.modulemap;
 				OTHER_CODE_SIGN_FLAGS = "--deep";
@@ -3852,7 +3850,7 @@
 					"$(SRCROOT)/deps/lib",
 					"$(PROJECT_DIR)/deps/lib",
 				);
-				MACOSX_DEPLOYMENT_TARGET = 10.11;
+				MACOSX_DEPLOYMENT_TARGET = 10.15;
 				MARKETING_VERSION = 1.1.2;
 				MODULEMAP_FILE = module.modulemap;
 				OTHER_CODE_SIGN_FLAGS = "--deep";
