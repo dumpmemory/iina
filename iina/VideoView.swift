@@ -234,10 +234,11 @@ class VideoView: NSView {
         
     // HDR
     // TODO: The correct color space here must be taken from VideoInfo
-    // TODO: After setting the color space it must set in mpv below as well
     videoLayer.wantsExtendedDynamicRangeContent = true
     var name = CGColorSpace.displayP3_PQ_EOTF
-    videoLayer.colorspace = CGColorSpace(name: name)    
+    videoLayer.colorspace = CGColorSpace(name: name)
+    // TODO: The correct color space must be taken from VideoInfo here as well
+    player.mpv.setString(MPVOption.GPURendererOptions.targetTrc, "pq")
     return
 
     typealias ProfileData = (uuid: CFUUID, profileUrl: URL?)
