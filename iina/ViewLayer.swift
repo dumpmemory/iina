@@ -29,12 +29,6 @@ class ViewLayer: CAOpenGLLayer {
     isAsynchronous = false
 
     autoresizingMask = [.layerWidthSizable, .layerHeightSizable]
-
-    // HDR
-    wantsExtendedDynamicRangeContent = true
-    // TODO: This must be moved to setICCProfile in VideoView
-    var name = CGColorSpace.displayP3_PQ_EOTF
-    colorspace = CGColorSpace(name: name)
   }
 
   override init(layer: Any) {

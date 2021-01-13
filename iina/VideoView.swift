@@ -226,14 +226,20 @@ class VideoView: NSView {
     }
     player.mpv.setDouble(MPVOption.Video.displayFps, actualFps)
   
-    // HDR
-    // TODO: all HDR code must be moved here
-    // TODO: uncomment this
-//    setICCProfile(displayId)
+    setICCProfile(displayId)
     currentDisplay = displayId
   }
 
   func setICCProfile(_ displayId: UInt32) {
+        
+    // HDR
+    // TODO: The correct color space here must be taken from VideoInfo
+    // TODO: After setting the color space it must set in mpv below as well
+    videoLayer.wantsExtendedDynamicRangeContent = true
+    var name = CGColorSpace.displayP3_PQ_EOTF
+    videoLayer.colorspace = CGColorSpace(name: name)    
+    return
+
     typealias ProfileData = (uuid: CFUUID, profileUrl: URL?)
     guard let uuid = CGDisplayCreateUUIDFromDisplayID(displayId)?.takeRetainedValue() else { return }
 
