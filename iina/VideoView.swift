@@ -64,11 +64,6 @@ class VideoView: NSView {
     autoresizingMask = [.width, .height]
     wantsBestResolutionOpenGLSurface = true
 
-    // HDR
-    if #available(macOS 10.15, *) {
-      wantsExtendedDynamicRangeOpenGLSurface = true
-    }
-
     // dragging init
     registerForDraggedTypes([.nsFilenames, .nsURL, .string])
     
@@ -238,7 +233,12 @@ class VideoView: NSView {
     if player.hdrMetadata.transfer != nil && player.hdrMetadata.primaries != nil {
       Logger.log("Will activate HDR color space instead of using ICC profile");
 
-      videoLayer.wantsExtendedDynamicRangeContent = true
+      // HDR
+      if #available(macOS 10.15, *) {
+        self.wantsExtendedDynamicRangeOpenGLSurface = true
+        videoLayer.wantsExtendedDynamicRangeContent = true
+      }
+
       var name = "" as CFString;
       if (player.hdrMetadata.transfer == "pq" && player.hdrMetadata.primaries == "displayp3")
       {

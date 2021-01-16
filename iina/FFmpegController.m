@@ -493,16 +493,16 @@ static const struct masteringdisplaycolorvolume_values MasteringDisplayColorVolu
               Code= -1;
         // Red
           if (metadata3->display_primaries[0][0].num<MasteringDisplayColorVolume_Values[i].Values[2*2+j]-25 || (metadata3->display_primaries[0][0].num>=MasteringDisplayColorVolume_Values[i].Values[2*2+j]+25))
-              Code=0;
-          
-          // TODO: Luminance check
+              Code= -1;
+                    
           // +/- 0.00005 (4 digits after comma)
-          //                  if (Values[3*2+j]<MasteringDisplayColorVolume_Values[i].Values[3*2+j]-2 || (Values[3*2+j]>=MasteringDisplayColorVolume_Values[i].Values[3*2+j]+3))
-          //                      Code= -1;
+          if (metadata3->white_point[0].num<MasteringDisplayColorVolume_Values[i].Values[3*2+j]-2 || (metadata3->white_point[0].num>=MasteringDisplayColorVolume_Values[i].Values[3*2+j]+3))
+              Code= -1;
 
             if (Code>0)
             {
               NSLog(@"####### Found primaries with code %d",Code);
+              break;
             }
         }
 
