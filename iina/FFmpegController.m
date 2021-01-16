@@ -362,6 +362,7 @@ static const struct masteringdisplaycolorvolume_values MasteringDisplayColorVolu
   // Find the decoder for the video stream
   AVCodec *pCodec = avcodec_find_decoder(pVideoStream->codecpar->codec_id);
   CHECK_NOTNULL(pCodec, @"Unsupported codec")
+  
 
   // Open codec
   AVCodecContext *pCodecCtx = avcodec_alloc_context3(pCodec);
@@ -369,6 +370,14 @@ static const struct masteringdisplaycolorvolume_values MasteringDisplayColorVolu
 
   avcodec_parameters_to_context(pCodecCtx, pVideoStream->codecpar);
   pCodecCtx->time_base = pVideoStream->time_base;
+
+  if (pCodecCtx->color_primaries != AVCOL_PRI_BT2020 && pCodecCtx->color_primaries != AVCOL_PRI_BT709)
+  {
+    avcodec_free_context(&pCodecCtx);
+    avformat_close_input(&pFormatCtx);
+    NSLog(@"Not HDR");
+    return -1;
+  }
 
   if (pCodecCtx->pix_fmt < 0 || pCodecCtx->pix_fmt >= AV_PIX_FMT_NB) {
     avcodec_free_context(&pCodecCtx);
@@ -650,6 +659,7 @@ static const struct masteringdisplaycolorvolume_values MasteringDisplayColorVolu
   }
 
   int code = [FFmpegController getPrimariesForFile:file];
+  
   
   // By default we set DCI P3 as it is stated in Apple docs to be the default color space
   info[@"primaries"] = @"dcip3";
