@@ -174,7 +174,7 @@ static void NSPrint(NSString *format, ...)
 
   // Allocate the output frame
   // We need to convert the video frame to RGBA to satisfy CGImage's data format
-  int thumbWidth = 120;
+  int thumbWidth = thumbnailsWidth;
   int thumbHeight = (float)thumbWidth / ((float)pCodecCtx->width / pCodecCtx->height);
 
   AVFrame *pFrameRGB = av_frame_alloc();
