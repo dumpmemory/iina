@@ -38,8 +38,12 @@
 
 @property(nonatomic) NSInteger thumbnailCount;
 
-- (void)generateThumbnailForFile:(nonnull NSString *)file;
+- (void)generateThumbnailForFile:(nonnull NSString *)file
+                      thumbWidth:(int)thumbWidth;
 
 + (NSDictionary *)probeVideoInfoForFile:(nonnull NSString *)file;
+
+// HDR
++ (NSDictionary *)getColorSpaceMetadataForFile:(nonnull NSString *)file;
 
 @end
