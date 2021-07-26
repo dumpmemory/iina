@@ -41,9 +41,9 @@
 - (void)generateThumbnailForFile:(nonnull NSString *)file
                       thumbWidth:(int)thumbWidth;
 
-+ (NSDictionary *)probeVideoInfoForFile:(nonnull NSString *)file;
++ (nullable NSDictionary *)probeVideoInfoForFile:(nonnull NSString *)file;
 
 // HDR
-+ (NSDictionary *)getColorSpaceMetadataForFile:(nonnull NSString *)file;
++ (nullable NSDictionary *)getColorSpaceMetadataForFile:(nonnull NSString *)file;
 
 @end

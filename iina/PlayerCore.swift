@@ -112,7 +112,7 @@ class PlayerCore: NSObject {
   var mpv: MPVController!
   
   // HDR
-  var hdrMetadata: (primaries: String?, transfer: String?);
+  var hdrMetadata: (primaries: String?, transfer: String?, max_luminance: NSNumber?);
 
   lazy var ffmpegController: FFmpegController = {
     let controller = FFmpegController()
@@ -246,7 +246,7 @@ class PlayerCore: NSObject {
   {
     guard let colorspaceData = FFmpegController.getColorSpaceMetadata(forFile: path) else { return }
 
-    var result: (primaries: String?, transfer: String?)
+    var result: (primaries: String?, transfer: String?, max_luminance: NSNumber?)
     colorspaceData.forEach { (k, v) in
       guard let key = k as? String else { return }
       switch key.lowercased() {
@@ -254,6 +254,8 @@ class PlayerCore: NSObject {
         result.primaries = v as? String
       case "color-trc":
         result.transfer = v as? String
+      case "max_luminance":
+        result.max_luminance = v as? NSNumber
       default:
         break
       }
@@ -1663,9 +1665,7 @@ class PlayerCore: NSObject {
    It may take some time to run this method, so it should be used in background.
    */
   func refreshCachedVideoInfo(forVideoPath path: String) {
-    
     guard let dict = FFmpegController.probeVideoInfo(forFile: path) else { return }
-    
     let progress = Utility.playbackProgressFromWatchLater(path.md5)
     self.info.cachedVideoDurationAndProgress[path] = (
       duration: dict["@iina_duration"] as? Double,

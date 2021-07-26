@@ -66,7 +66,6 @@ class VideoView: NSView {
 
     // dragging init
     registerForDraggedTypes([.nsFilenames, .nsURL, .string])
-
   }
 
   convenience init(frame: CGRect, player: PlayerCore) {
@@ -232,60 +231,69 @@ class VideoView: NSView {
     if player.hdrMetadata.transfer != nil && player.hdrMetadata.primaries != nil {
       Logger.log("Will activate HDR color space instead of using ICC profile");
 
-      // HDR
-      if #available(macOS 10.15, *) {
-        self.wantsExtendedDynamicRangeOpenGLSurface = true
-        videoLayer.wantsExtendedDynamicRangeContent = true
-      }
-
-      var name = "" as CFString;
-      if (player.hdrMetadata.transfer == "pq" && player.hdrMetadata.primaries == "displayp3")
-      {
-        name = CGColorSpace.displayP3_PQ_EOTF
-      } else
-      if (player.hdrMetadata.transfer == "hlg" && player.hdrMetadata.primaries == "displayp3")
-      {
-        name = CGColorSpace.displayP3_HLG
-      } else
-      if (player.hdrMetadata.primaries == "displayp3")
-      {
-        name = CGColorSpace.displayP3
-      } else
-      // Special case! CGColorSpace.dcip3 will not activate HDR mode so we set it to displayP3 instead
-      if (player.hdrMetadata.transfer == "pq" && player.hdrMetadata.primaries == "dcip3")
-      {
-        name = CGColorSpace.displayP3_PQ_EOTF
-      } else
-      // Special case! CGColorSpace.dcip3 will not activate HDR mode so we set it to displayP3 instead
-      if (player.hdrMetadata.transfer == "hlg" && player.hdrMetadata.primaries == "dcip3")
-      {
-        name = CGColorSpace.displayP3_HLG
-      } else
-      if (player.hdrMetadata.primaries == "dcip3")
-      {
+      self.wantsExtendedDynamicRangeOpenGLSurface = true
+      videoLayer.wantsExtendedDynamicRangeContent = true
+      
+      var name: CFString? = nil;
+      switch player.hdrMetadata.primaries {
+      case "displayp3":
+        switch player.hdrMetadata.transfer {
+        case "pq":
+          if #available(macOS 10.15.4, *) {
+            name = CGColorSpace.displayP3_PQ
+          } else {
+            name = CGColorSpace.displayP3_PQ_EOTF
+          }
+        case "hlg":
+          name = CGColorSpace.displayP3_HLG
+        default:
+          name = CGColorSpace.displayP3
+        }
+        
+      case "bt2020": // deprecated
+        switch player.hdrMetadata.transfer {
+        case "pq":
+          if #available(macOS 11.0, *) {
+            name = CGColorSpace.itur_2020_PQ
+          } else {
+            name = CGColorSpace.itur_2020_PQ_EOTF
+          }
+        case "hlg":
+          if #available(macOS 10.15.6, *) {
+            name = CGColorSpace.itur_2020_HLG
+          } else {
+            fallthrough
+          }
+        default:
+          name = CGColorSpace.itur_2020
+        }
+        
+      // SDR? Should not go here
+      case "dcip3":
         name = CGColorSpace.dcip3
-      } else
-      if (player.hdrMetadata.primaries == "srgb")
-      {
-        name = CGColorSpace.extendedSRGB
-      } else
-      if (player.hdrMetadata.transfer == "pq" && player.hdrMetadata.primaries == "bt2020")
-      {
-        name = CGColorSpace.itur_2020_PQ_EOTF
-      } else
-      if (player.hdrMetadata.primaries == "bt2020")
-      {
-        name = CGColorSpace.itur_2020
-      } else
-      {
-        Logger.log("Unknown HDR color space information: transfer=\(player.hdrMetadata.transfer) primaries=\(player.hdrMetadata.primaries)");
+      case "bt709":
+        name = CGColorSpace.itur_709;
+        
+      // These values are not detected in FFmpegController, but I still list them here
+      case "srgb":
+        name = CGColorSpace.sRGB
+      default:
+        switch player.hdrMetadata.transfer {
+        case "gamma2.2":
+          name = CGColorSpace.genericGrayGamma2_2
+        default:
+          Logger.log("Unknown HDR color space information: transfer=\(player.hdrMetadata.transfer) primaries=\(player.hdrMetadata.primaries)");
+        }
       }
-
-      if (name != "" as CFString) {
-        videoLayer.colorspace = CGColorSpace(name: name)
+      
+      if (name != nil) {
+        videoLayer.colorspace = CGColorSpace(name: name!)
+      } else {
+        videoLayer.colorspace = window?.screen?.colorSpace?.cgColorSpace ?? CGColorSpace(name: CGColorSpace.dcip3)
       }
-      // TODO: The correct color space must be taken from VideoInfo here as well
       player.mpv.setString(MPVOption.GPURendererOptions.targetTrc, player.hdrMetadata.transfer!)
+      player.mpv.setString(MPVOption.GPURendererOptions.targetPrim, "bt.2020") // We only support AVCOL_PRI_BT2020, see FFmpegController
+      player.mpv.setString(MPVOption.GPURendererOptions.targetPeak, player.hdrMetadata.max_luminance?.stringValue ?? "auto")
     } else {
       typealias ProfileData = (uuid: CFUUID, profileUrl: URL?)
       guard let uuid = CGDisplayCreateUUIDFromDisplayID(displayId)?.takeRetainedValue() else { return }

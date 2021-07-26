@@ -42,7 +42,6 @@ class ViewLayer: CAOpenGLLayer {
 
     autoresizingMask = [.layerWidthSizable, .layerHeightSizable]
     
-
   }
 
   required init?(coder aDecoder: NSCoder) {
