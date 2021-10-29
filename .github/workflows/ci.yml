@@ -38,7 +38,12 @@ jobs:
       - name: Export
         run: xcodebuild -archivePath archive.xcarchive -exportArchive -exportPath 'exportedApp.app' -exportOptionsPlist ./options.plist
 
+      - name: Create .dmg file
+        run: |
+          brew install create-dmg
+          create-dmg --app-drop-link 0 0 IINA.dmg ./exportedApp.app/IINA.app
+
       - uses: actions/upload-artifact@v2
         with:
           name: IINA
-          path: exportedApp.app
+          path: IINA.dmg
