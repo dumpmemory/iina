@@ -41,6 +41,7 @@ class ViewLayer: CAOpenGLLayer {
     isAsynchronous = false
 
     autoresizingMask = [.layerWidthSizable, .layerHeightSizable]
+    
 
   }
 
