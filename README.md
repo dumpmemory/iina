@@ -15,7 +15,7 @@
 ---
 ## Special release
 
-* This version supports HDR displays
+* This version supports HDR displays with Apple M1 support
 
 
 ## Features
