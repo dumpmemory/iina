@@ -365,109 +365,119 @@ static const struct masteringdisplaycolorvolume_values MasteringDisplayColorVolu
 
     ret = avformat_find_stream_info(pFormatCtx, NULL);
     if (ret < 0) return NULL;
-    
-    NSMutableDictionary *info = [[NSMutableDictionary alloc] init];
 
     int videoStream = av_find_best_stream(pFormatCtx, AVMEDIA_TYPE_VIDEO, -1, -1, NULL, 0);
+    if (videoStream < 0) return NULL;
 
     // Get the codec context for the video stream
     AVStream *pVideoStream = pFormatCtx->streams[videoStream];
     
-    if (pVideoStream->codecpar->color_primaries == AVCOL_PRI_BT2020) {
+    if (pVideoStream->codecpar->color_primaries != AVCOL_PRI_BT2020) {
+      // SDR video
+      return NULL;
+    }
 
-      // Find the decoder for the video stream
-      AVCodec *pCodec = avcodec_find_decoder(pVideoStream->codecpar->codec_id);
-      if (!pCodec) return NULL;
+    // Find the decoder for the video stream
+    AVCodec *pCodec = avcodec_find_decoder(pVideoStream->codecpar->codec_id);
+    if (!pCodec) return NULL;
 
-      // Open codec
-      AVCodecContext *pCodecCtx = avcodec_alloc_context3(pCodec);
+    // Open codec
+    AVCodecContext *pCodecCtx = avcodec_alloc_context3(pCodec);
 
-      avcodec_parameters_to_context(pCodecCtx, pVideoStream->codecpar);
+    ret = avcodec_parameters_to_context(pCodecCtx, pVideoStream->codecpar);
+    if (ret < 0) return NULL;
     
-      // color_trc must be converted to mpv format, for example
-      // AVCOL_TRC_SMPTE2084 && AVCOL_TRC_SMPTEST2084 means PQ
-      //  ????? bt.1886 =
-      //  ITU-R BT.1886 curve (assuming infinite contrast)
-      //  ??? linear
-      //  Linear light output
-      //  ???? gamma1.8
-      //  Pure power curve (gamma 1.8), also used for Apple RGB
-      //  ???? gamma2.0
-      //  Pure power curve (gamma 2.0)
-      //  ???? gamma2.4
-      //  Pure power curve (gamma 2.4)
-      //  ???? gamma2.6
-      //  Pure power curve (gamma 2.6)
-      //  ???? prophoto
-      //  ProPhoto RGB (ROMM)
-      //  ???? v-log
-      //  Panasonic V-Log (VARICAM) curve
-      //  s-log1
-      //  Sony S-Log1 curve
-      //  s-log2
+    NSMutableDictionary *info = [[NSMutableDictionary alloc] init];
+  
+    // color_trc must be converted to mpv format, for example
+    // AVCOL_TRC_SMPTE2084 && AVCOL_TRC_SMPTEST2084 means PQ
+    //  ????? bt.1886 =
+    //  ITU-R BT.1886 curve (assuming infinite contrast)
+    //  ??? linear
+    //  Linear light output
+    //  ???? gamma1.8
+    //  Pure power curve (gamma 1.8), also used for Apple RGB
+    //  ???? gamma2.0
+    //  Pure power curve (gamma 2.0)
+    //  ???? gamma2.4
+    //  Pure power curve (gamma 2.4)
+    //  ???? gamma2.6
+    //  Pure power curve (gamma 2.6)
+    //  ???? prophoto
+    //  ProPhoto RGB (ROMM)
+    //  ???? v-log
+    //  Panasonic V-Log (VARICAM) curve
+    //  s-log1
+    //  Sony S-Log1 curve
+    //  s-log2
 
-      switch (pVideoStream->codecpar->color_trc)
-      {
-        // IEC 61966-2-4 (sRGB)
-        case AVCOL_TRC_IEC61966_2_1: info[@"color-trc"] = @"srgb"; break;
-        // Pure power curve (gamma 2.2)
-        case AVCOL_TRC_GAMMA22: info[@"color-trc"] = @"gamma2.2"; break;
-        // Pure power curve (gamma 2.8), also used for BT.470-BG
-        case AVCOL_TRC_GAMMA28: info[@"color-trc"] = @"gamma2.8"; break;
-        // ITU-R BT.2100 HLG (Hybrid Log-gamma) curve, aka ARIB STD-B67
-        case AVCOL_TRC_ARIB_STD_B67: info[@"color-trc"] = @"hlg"; break;
-        // ITU-R BT.2100 PQ (Perceptual quantizer) curve, aka SMPTE ST2084
-        // assuming that AVCOL_TRC_SMPTEST2084 and AVCOL_TRC_SMPTE2084 have same value
-        case AVCOL_TRC_SMPTE2084: info[@"color-trc"] = @"pq"; break;
-        default: info[@"color-trc"] = nil; break;
-      }
-      
-      
-      AVMasteringDisplayMetadata *metadata = (AVMasteringDisplayMetadata *)av_stream_get_side_data(pVideoStream, AV_PKT_DATA_MASTERING_DISPLAY_METADATA, NULL);
-      if (metadata && metadata->has_primaries)
-      {
-        for (int i=0; i<MasteringDisplayColorVolume_Values_Size; i++)
-        {
-          const struct masteringdisplaycolorvolume_values* values = &MasteringDisplayColorVolume_Values[i];
-          int j = 0;
-          
-          // +/- 0.0005 (3 digits after comma)
-          double gValue = (double)metadata->display_primaries[1][0].num / (double)metadata->display_primaries[1][0].den / 0.00002;
-          if (gValue<values->Values[0*2+j]-25 || gValue>=values->Values[0*2+j]+25)
-            continue;
-          double bValue = (double)metadata->display_primaries[2][0].num / (double)metadata->display_primaries[2][0].den / 0.00002;
-          if (bValue<values->Values[1*2+j]-25 || bValue>=values->Values[1*2+j]+25)
-            continue;
-          double rValue = (double)metadata->display_primaries[0][0].num / (double)metadata->display_primaries[0][0].den / 0.00002;
-          if (rValue<values->Values[2*2+j]-25 || rValue>=values->Values[2*2+j]+25)
-            continue;
-
-          // +/- 0.00005 (4 digits after comma)
-          double wpValue = (double)metadata->white_point[0].num / (double)metadata->white_point[0].den / 0.00002;
-          if (wpValue<values->Values[3*2+j]-2 || wpValue>=values->Values[3*2+j]+3)
-            continue;
-          
-          switch (values->Code)
-          {
-            case 1: info[@"primaries"] = @"bt709"; break;
-            case 9: info[@"primaries"] = @"bt2020"; break;
-            case 11: info[@"primaries"] = @"dcip3"; break;
-            case 12: info[@"primaries"] = @"displayp3"; break;
-            default: info[@"primaries"] = nil; break;
-          }
-          
-          break;
-        }
-      }
-      if (metadata && metadata->has_luminance)
-      {
-        double max_luminance = (double)metadata->max_luminance.num / (double)metadata->max_luminance.den;
-        info[@"max_luminance"] = [NSNumber numberWithDouble:max_luminance];
-      }
-      // Free metadata?
+    switch (pVideoStream->codecpar->color_trc)
+    {
+      // IEC 61966-2-4 (sRGB)
+      case AVCOL_TRC_IEC61966_2_1: info[@"color-trc"] = @"srgb"; break;
+      // Pure power curve (gamma 2.2)
+      case AVCOL_TRC_GAMMA22: info[@"color-trc"] = @"gamma2.2"; break;
+      // Pure power curve (gamma 2.8), also used for BT.470-BG
+      case AVCOL_TRC_GAMMA28: info[@"color-trc"] = @"gamma2.8"; break;
+      // ITU-R BT.2100 HLG (Hybrid Log-gamma) curve, aka ARIB STD-B67
+      case AVCOL_TRC_ARIB_STD_B67: info[@"color-trc"] = @"hlg"; break;
+      // ITU-R BT.2100 PQ (Perceptual quantizer) curve, aka SMPTE ST2084
+      // assuming that AVCOL_TRC_SMPTEST2084 and AVCOL_TRC_SMPTE2084 have same value
+      case AVCOL_TRC_SMPTE2084: info[@"color-trc"] = @"pq"; break;
+      default: NSLog(@"HDR: Unknown color-trc found, HDR playback disabled"); return NULL;
     }
     
-    NSLog(@"HDR primaries=%@ color-trc=%@ max_luminance=%@", info[@"primaries"], info[@"color-trc"], info[@"max_luminance"]);
+    
+    AVMasteringDisplayMetadata *metadata = (AVMasteringDisplayMetadata *)av_stream_get_side_data(pVideoStream, AV_PKT_DATA_MASTERING_DISPLAY_METADATA, NULL);
+    if (metadata && metadata->has_primaries)
+    {
+      int code = -1;
+      for (int i=0; i<MasteringDisplayColorVolume_Values_Size; i++)
+      {
+        const struct masteringdisplaycolorvolume_values* values = &MasteringDisplayColorVolume_Values[i];
+        int j = 0;
+        
+        // +/- 0.0005 (3 digits after comma)
+        double gValue = (double)metadata->display_primaries[1][0].num / (double)metadata->display_primaries[1][0].den / 0.00002;
+        if (gValue<values->Values[0*2+j]-25 || gValue>=values->Values[0*2+j]+25)
+          continue;
+        double bValue = (double)metadata->display_primaries[2][0].num / (double)metadata->display_primaries[2][0].den / 0.00002;
+        if (bValue<values->Values[1*2+j]-25 || bValue>=values->Values[1*2+j]+25)
+          continue;
+        double rValue = (double)metadata->display_primaries[0][0].num / (double)metadata->display_primaries[0][0].den / 0.00002;
+        if (rValue<values->Values[2*2+j]-25 || rValue>=values->Values[2*2+j]+25)
+          continue;
+
+        // +/- 0.00005 (4 digits after comma)
+        double wpValue = (double)metadata->white_point[0].num / (double)metadata->white_point[0].den / 0.00002;
+        if (wpValue<values->Values[3*2+j]-2 || wpValue>=values->Values[3*2+j]+3)
+          continue;
+        
+        code = values->Code;
+        break;
+      }
+      
+      switch (code)
+      {
+        case 1: info[@"primaries"] = @"bt709"; break;
+        case 9: info[@"primaries"] = @"bt2020"; break;
+        case 11: info[@"primaries"] = @"dcip3"; break;
+        case 12: info[@"primaries"] = @"displayp3"; break;
+        default: NSLog(@"HDR: Unknown primaries found, HDR playback disabled"); return NULL;
+      }
+    } else {
+      NSLog(@"HDR: Video source doesn't provide master display metadata, assume primaries=displayp3");
+      info[@"primaries"] = @"displayp3";
+    }
+    
+    if (metadata && metadata->has_luminance)
+    {
+      double max_luminance = (double)metadata->max_luminance.num / (double)metadata->max_luminance.den;
+      info[@"max_luminance"] = [NSNumber numberWithDouble:max_luminance];
+    }
+    // Free metadata?
+    
+    NSLog(@"HDR: primaries=%@ color-trc=%@ max_luminance=%@", info[@"primaries"], info[@"color-trc"], info[@"max_luminance"]);
     
     return info;
   } @finally {

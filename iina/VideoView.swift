@@ -229,7 +229,7 @@ class VideoView: NSView {
   func setICCProfile(_ displayId: UInt32) {
     // HDR
     if player.hdrMetadata.transfer != nil && player.hdrMetadata.primaries != nil {
-      Logger.log("Will activate HDR color space instead of using ICC profile");
+      Logger.log("HDR: Will activate HDR color space instead of using ICC profile");
 
       self.wantsExtendedDynamicRangeOpenGLSurface = true
       videoLayer.wantsExtendedDynamicRangeContent = true
@@ -278,12 +278,7 @@ class VideoView: NSView {
       case "srgb":
         name = CGColorSpace.sRGB
       default:
-        switch player.hdrMetadata.transfer {
-        case "gamma2.2":
-          name = CGColorSpace.genericGrayGamma2_2
-        default:
-          Logger.log("Unknown HDR color space information: transfer=\(player.hdrMetadata.transfer) primaries=\(player.hdrMetadata.primaries)");
-        }
+        Logger.log("HDR: Unknown HDR color space information transfer=\(player.hdrMetadata.transfer) primaries=\(player.hdrMetadata.primaries)");
       }
       
       if (name != nil) {
