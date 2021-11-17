@@ -296,8 +296,7 @@ class PlayerCore: NSObject {
 
     var result: (primaries: String?, transfer: String?, max_luminance: NSNumber?)
     colorspaceData.forEach { (k, v) in
-      guard let key = k as? String else { return }
-      switch key.lowercased() {
+      switch k as? String {
       case "primaries":
         result.primaries = v as? String
       case "color-trc":
