@@ -1,4 +1,4 @@
- //
+//
 //  VideoView.swift
 //  iina
 //
@@ -225,95 +225,103 @@ class VideoView: NSView {
     setICCProfile(displayId)
     currentDisplay = displayId
   }
+  
+  // HDR
+  func requestEdrMode() -> Bool {
+    if (player.hdrMetadata.transfer == nil || player.hdrMetadata.primaries == nil) {
+      // SDR content
+      return false;
+    }
+    if (window?.screen?.maximumPotentialExtendedDynamicRangeColorComponentValue ?? 1.0) <= 1.0 {
+      Logger.log("HDR: HDR video was found but the display does not support EDR mode");
+      return false;
+    }
+    Logger.log("HDR: Will activate HDR color space instead of using ICC profile");
+
+    self.wantsExtendedDynamicRangeOpenGLSurface = true
+    videoLayer.wantsExtendedDynamicRangeContent = true
+    
+    var name: CFString? = nil;
+    switch player.hdrMetadata.primaries {
+    case "displayp3":
+      switch player.hdrMetadata.transfer {
+      case "pq":
+        if #available(macOS 10.15.4, *) {
+          name = CGColorSpace.displayP3_PQ
+        } else {
+          name = CGColorSpace.displayP3_PQ_EOTF
+        }
+      case "hlg":
+        name = CGColorSpace.displayP3_HLG
+      default:
+        name = CGColorSpace.displayP3
+      }
+      
+    case "bt2020": // deprecated
+      switch player.hdrMetadata.transfer {
+      case "pq":
+        if #available(macOS 11.0, *) {
+          name = CGColorSpace.itur_2020_PQ
+        } else {
+          name = CGColorSpace.itur_2020_PQ_EOTF
+        }
+      case "hlg":
+        if #available(macOS 10.15.6, *) {
+          name = CGColorSpace.itur_2020_HLG
+        } else {
+          fallthrough
+        }
+      default:
+        name = CGColorSpace.itur_2020
+      }
+      
+    // SDR? Should not go here
+    case "dcip3":
+      name = CGColorSpace.dcip3
+    case "bt709":
+      name = CGColorSpace.itur_709;
+      
+    // These values are not detected in FFmpegController, but I still list them here
+    case "srgb":
+      name = CGColorSpace.sRGB
+    default:
+      Logger.log("HDR: Unknown HDR color space information transfer=\(player.hdrMetadata.transfer) primaries=\(player.hdrMetadata.primaries)");
+      return false;
+    }
+    
+    videoLayer.colorspace = CGColorSpace(name: name!)
+    player.mpv.setString(MPVOption.GPURendererOptions.targetTrc, player.hdrMetadata.transfer!)
+    player.mpv.setString(MPVOption.GPURendererOptions.targetPrim, "bt.2020") // We only support AVCOL_PRI_BT2020, see FFmpegController
+    player.mpv.setString(MPVOption.GPURendererOptions.targetPeak, player.hdrMetadata.max_luminance?.stringValue ?? "auto")
+    return true;
+  }
 
   func setICCProfile(_ displayId: UInt32) {
-    // HDR
-    if player.hdrMetadata.transfer != nil && player.hdrMetadata.primaries != nil {
-      Logger.log("HDR: Will activate HDR color space instead of using ICC profile");
+    if requestEdrMode() { return }
+    
+    typealias ProfileData = (uuid: CFUUID, profileUrl: URL?)
+    guard let uuid = CGDisplayCreateUUIDFromDisplayID(displayId)?.takeRetainedValue() else { return }
 
-      self.wantsExtendedDynamicRangeOpenGLSurface = true
-      videoLayer.wantsExtendedDynamicRangeContent = true
-      
-      var name: CFString? = nil;
-      switch player.hdrMetadata.primaries {
-      case "displayp3":
-        switch player.hdrMetadata.transfer {
-        case "pq":
-          if #available(macOS 10.15.4, *) {
-            name = CGColorSpace.displayP3_PQ
-          } else {
-            name = CGColorSpace.displayP3_PQ_EOTF
+    var argResult: ProfileData = (uuid, nil)
+    withUnsafeMutablePointer(to: &argResult) { data in
+      ColorSyncIterateDeviceProfiles({ (dict: CFDictionary?, ptr: UnsafeMutableRawPointer?) -> Bool in
+        if let info = dict as? [String: Any], let current = info["DeviceProfileIsCurrent"] as? Int {
+          let deviceID = info["DeviceID"] as! CFUUID
+          let ptr = ptr!.bindMemory(to: ProfileData.self, capacity: 1)
+          let uuid = ptr.pointee.uuid
+
+          if current == 1, deviceID == uuid {
+            let profileURL = info["DeviceProfileURL"] as! URL
+            ptr.pointee.profileUrl = profileURL
+            return false
           }
-        case "hlg":
-          name = CGColorSpace.displayP3_HLG
-        default:
-          name = CGColorSpace.displayP3
         }
-        
-      case "bt2020": // deprecated
-        switch player.hdrMetadata.transfer {
-        case "pq":
-          if #available(macOS 11.0, *) {
-            name = CGColorSpace.itur_2020_PQ
-          } else {
-            name = CGColorSpace.itur_2020_PQ_EOTF
-          }
-        case "hlg":
-          if #available(macOS 10.15.6, *) {
-            name = CGColorSpace.itur_2020_HLG
-          } else {
-            fallthrough
-          }
-        default:
-          name = CGColorSpace.itur_2020
-        }
-        
-      // SDR? Should not go here
-      case "dcip3":
-        name = CGColorSpace.dcip3
-      case "bt709":
-        name = CGColorSpace.itur_709;
-        
-      // These values are not detected in FFmpegController, but I still list them here
-      case "srgb":
-        name = CGColorSpace.sRGB
-      default:
-        Logger.log("HDR: Unknown HDR color space information transfer=\(player.hdrMetadata.transfer) primaries=\(player.hdrMetadata.primaries)");
-      }
-      
-      if (name != nil) {
-        videoLayer.colorspace = CGColorSpace(name: name!)
-      } else {
-        videoLayer.colorspace = window?.screen?.colorSpace?.cgColorSpace ?? CGColorSpace(name: CGColorSpace.dcip3)
-      }
-      player.mpv.setString(MPVOption.GPURendererOptions.targetTrc, player.hdrMetadata.transfer!)
-      player.mpv.setString(MPVOption.GPURendererOptions.targetPrim, "bt.2020") // We only support AVCOL_PRI_BT2020, see FFmpegController
-      player.mpv.setString(MPVOption.GPURendererOptions.targetPeak, player.hdrMetadata.max_luminance?.stringValue ?? "auto")
-    } else {
-      typealias ProfileData = (uuid: CFUUID, profileUrl: URL?)
-      guard let uuid = CGDisplayCreateUUIDFromDisplayID(displayId)?.takeRetainedValue() else { return }
+        return true
+      }, data)
+    }
 
-      var argResult: ProfileData = (uuid, nil)
-      withUnsafeMutablePointer(to: &argResult) { data in
-        ColorSyncIterateDeviceProfiles({ (dict: CFDictionary?, ptr: UnsafeMutableRawPointer?) -> Bool in
-          if let info = dict as? [String: Any], let current = info["DeviceProfileIsCurrent"] as? Int {
-            let deviceID = info["DeviceID"] as! CFUUID
-            let ptr = ptr!.bindMemory(to: ProfileData.self, capacity: 1)
-            let uuid = ptr.pointee.uuid
-
-            if current == 1, deviceID == uuid {
-              let profileURL = info["DeviceProfileURL"] as! URL
-              ptr.pointee.profileUrl = profileURL
-              return false
-            }
-          }
-          return true
-        }, data)
-      }
-
-      if let iccProfilePath = argResult.profileUrl?.path, FileManager.default.fileExists(atPath: iccProfilePath) {
-        player.mpv.setString(MPVOption.GPURendererOptions.iccProfile, iccProfilePath)
-      }
+    if let iccProfilePath = argResult.profileUrl?.path, FileManager.default.fileExists(atPath: iccProfilePath) {
+      player.mpv.setString(MPVOption.GPURendererOptions.iccProfile, iccProfilePath)
     }
   }
 }
