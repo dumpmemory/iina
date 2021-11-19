@@ -10,7 +10,7 @@ archive:
 	xcodebuild -project iina.xcodeproj -scheme iina -config Release -archivePath ./archive archive
 
 dmg:
-	create-dmg iina.dmg ./archive.xcarchive/Products/Applications/IINA.app
+	create-dmg --app-drop-link 0 0 iina.dmg ./archive.xcarchive/Products/Applications/IINA.app
 
 clean:
 	rm -rf archive.xcarchive iina.dmg
