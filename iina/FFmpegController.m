@@ -387,6 +387,9 @@ static const struct masteringdisplaycolorvolume_values MasteringDisplayColorVolu
     ret = avcodec_parameters_to_context(pCodecCtx, pVideoStream->codecpar);
     if (ret < 0) return NULL;
     
+    ret = avcodec_open2(pCodecCtx, pCodec, NULL);
+    if (ret < 0) return NULL;
+    
     NSMutableDictionary *info = [[NSMutableDictionary alloc] init];
   
     // color_trc must be converted to mpv format, for example
@@ -427,8 +430,29 @@ static const struct masteringdisplaycolorvolume_values MasteringDisplayColorVolu
       default: NSLog(@"HDR: Unknown color-trc found, HDR playback disabled"); return NULL;
     }
     
-    
     AVMasteringDisplayMetadata *metadata = (AVMasteringDisplayMetadata *)av_stream_get_side_data(pVideoStream, AV_PKT_DATA_MASTERING_DISPLAY_METADATA, NULL);
+    
+    if (!metadata) {
+        AVPacket packet;
+        while (av_read_frame(pFormatCtx, &packet) >= 0) {
+          if (packet.stream_index != videoStream) continue;
+          ret = avcodec_send_packet(pCodecCtx, &packet);
+          if (ret < 0) break;
+          
+          metadata = (AVMasteringDisplayMetadata *)av_packet_get_side_data(&packet, AV_PKT_DATA_MASTERING_DISPLAY_METADATA, NULL);
+          if (metadata) break;
+          
+          AVFrame *pFrame = av_frame_alloc();
+          ret = avcodec_receive_frame(pCodecCtx, pFrame);
+          if (ret < 0) {
+            if (ret == AVERROR(EAGAIN)) continue;
+            break;
+          }
+          
+          metadata = (AVMasteringDisplayMetadata *)av_frame_get_side_data(pFrame, AV_FRAME_DATA_MASTERING_DISPLAY_METADATA)->data;
+          break;
+        }
+    }
     if (metadata && metadata->has_primaries)
     {
       int code = -1;
@@ -463,7 +487,10 @@ static const struct masteringdisplaycolorvolume_values MasteringDisplayColorVolu
         case 9: info[@"primaries"] = @"bt2020"; break;
         case 11: info[@"primaries"] = @"dcip3"; break;
         case 12: info[@"primaries"] = @"displayp3"; break;
-        default: NSLog(@"HDR: Unknown primaries found, HDR playback disabled"); return NULL;
+        default:
+          NSLog(@"HDR: Unknown primaries found, assume primaries=displayp3");
+          info[@"primaries"] = @"displayp3";
+          break;
       }
     } else {
       NSLog(@"HDR: Video source doesn't provide master display metadata, assume primaries=displayp3");
@@ -474,6 +501,8 @@ static const struct masteringdisplaycolorvolume_values MasteringDisplayColorVolu
     {
       double max_luminance = (double)metadata->max_luminance.num / (double)metadata->max_luminance.den;
       info[@"max_luminance"] = [NSNumber numberWithDouble:max_luminance];
+      double min_luminance = (double)metadata->min_luminance.num / (double)metadata->min_luminance.den;
+      info[@"min_luminance"] = [NSNumber numberWithDouble:min_luminance];
     }
     // Free metadata?
     
