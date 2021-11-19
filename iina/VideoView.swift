@@ -228,11 +228,12 @@ class VideoView: NSView {
   
   // HDR
   func requestEdrMode() -> Bool {
-    if (player.hdrMetadata.transfer == nil || player.hdrMetadata.primaries == nil) {
+    let (primaries, transfer, max_luminance, min_luminance) = player.hdrMetadata;
+    guard let transfer = transfer, let primaries = primaries else {
       // SDR content
       return false;
     }
-    if (window?.screen?.maximumPotentialExtendedDynamicRangeColorComponentValue ?? 1.0) <= 1.0 {
+    guard (window?.screen?.maximumPotentialExtendedDynamicRangeColorComponentValue ?? 1.0) > 1.0 else {
       Logger.log("HDR: HDR video was found but the display does not support EDR mode");
       return false;
     }
@@ -242,9 +243,9 @@ class VideoView: NSView {
     videoLayer.wantsExtendedDynamicRangeContent = true
     
     var name: CFString? = nil;
-    switch player.hdrMetadata.primaries {
+    switch primaries {
     case "displayp3":
-      switch player.hdrMetadata.transfer {
+      switch transfer {
       case "pq":
         if #available(macOS 10.15.4, *) {
           name = CGColorSpace.displayP3_PQ
@@ -258,7 +259,7 @@ class VideoView: NSView {
       }
       
     case "bt2020": // deprecated
-      switch player.hdrMetadata.transfer {
+      switch transfer {
       case "pq":
         if #available(macOS 11.0, *) {
           name = CGColorSpace.itur_2020_PQ
@@ -285,14 +286,14 @@ class VideoView: NSView {
     case "srgb":
       name = CGColorSpace.sRGB
     default:
-      Logger.log("HDR: Unknown HDR color space information transfer=\(player.hdrMetadata.transfer) primaries=\(player.hdrMetadata.primaries)");
+      Logger.log("HDR: Unknown HDR color space information transfer=\(transfer) primaries=\(primaries)");
       return false;
     }
     
     videoLayer.colorspace = CGColorSpace(name: name!)
-    player.mpv.setString(MPVOption.GPURendererOptions.targetTrc, player.hdrMetadata.transfer!)
+    player.mpv.setString(MPVOption.GPURendererOptions.targetTrc, transfer)
     player.mpv.setString(MPVOption.GPURendererOptions.targetPrim, "bt.2020") // We only support AVCOL_PRI_BT2020, see FFmpegController
-    player.mpv.setString(MPVOption.GPURendererOptions.targetPeak, player.hdrMetadata.max_luminance?.stringValue ?? "auto")
+    // videoLayer.edrMetadata = CAEDRMetadata.hdr10(minLuminance: min_luminance, maxLuminance: max_luminance, opticalOutputScale: 100); // OpenGL layer doesn't support edrMetadata
     return true;
   }
 

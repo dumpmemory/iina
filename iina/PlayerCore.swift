@@ -120,7 +120,7 @@ class PlayerCore: NSObject {
   var mpv: MPVController!
   
   // HDR
-  var hdrMetadata: (primaries: String?, transfer: String?, max_luminance: NSNumber?);
+  var hdrMetadata: (primaries: String?, transfer: String?, max_luminance: Float?, min_luminance: Float?);
 
   lazy var ffmpegController: FFmpegController = {
     let controller = FFmpegController()
@@ -294,7 +294,7 @@ class PlayerCore: NSObject {
   {
     guard let colorspaceData = FFmpegController.getColorSpaceMetadata(forFile: path) else { return }
 
-    var result: (primaries: String?, transfer: String?, max_luminance: NSNumber?)
+    var result: (primaries: String?, transfer: String?, max_luminance: Float?, min_luminance: Float?)
     colorspaceData.forEach { (k, v) in
       switch k as? String {
       case "primaries":
@@ -302,7 +302,9 @@ class PlayerCore: NSObject {
       case "color-trc":
         result.transfer = v as? String
       case "max_luminance":
-        result.max_luminance = v as? NSNumber
+        result.max_luminance = (v as? NSNumber)?.floatValue
+      case "min_luminance":
+        result.min_luminance = (v as? NSNumber)?.floatValue
       default:
         break
       }
