@@ -287,7 +287,7 @@ class VideoView: NSView {
     
     videoLayer.colorspace = CGColorSpace(name: name!)
     player.mpv.setString(MPVOption.GPURendererOptions.targetTrc, transfer)
-    player.mpv.setString(MPVOption.GPURendererOptions.targetPrim, primaries == "display-p3" ? "bt.2020" : primaries) // MPV doesn't support Display P3
+    player.mpv.setString(MPVOption.GPURendererOptions.targetPrim, primaries)
     // videoLayer.edrMetadata = CAEDRMetadata.hdr10(minLuminance: min_luminance, maxLuminance: max_luminance, opticalOutputScale: 100); // OpenGL layer doesn't support edrMetadata
     return true;
   }
