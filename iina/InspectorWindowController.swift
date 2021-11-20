@@ -31,6 +31,8 @@ class InspectorWindowController: NSWindowController, NSTableViewDelegate, NSTabl
   @IBOutlet weak var vformatField: NSTextField!
   @IBOutlet weak var vcodecField: NSTextField!
   @IBOutlet weak var vdecoderField: NSTextField!
+  @IBOutlet weak var vprimariesField: NSTextField!
+  
   @IBOutlet weak var voField: NSTextField!
   @IBOutlet weak var vsizeField: NSTextField!
   @IBOutlet weak var vbitrateField: NSTextField!
@@ -133,6 +135,16 @@ class InspectorWindowController: NSWindowController, NSTableViewDelegate, NSTabl
 
         let duration = controller.getDouble(MPVProperty.duration)
         self.durationField.stringValue = VideoTime(duration).stringRepresentation
+        
+        let primaries = controller.getString(MPVProperty.videoParamsPrimaries) ?? "unknown"
+        switch (primaries) {
+        case "bt.2020": fallthrough;
+        case "dci-p3": fallthrough;
+        case "display-p3":
+          self.vprimariesField.stringValue = primaries + " (HDR)";
+        default:
+          self.vprimariesField.stringValue = primaries + " (SDR)";
+        }
 
         let vwidth = controller.getInt(MPVProperty.width)
         let vheight = controller.getInt(MPVProperty.height)

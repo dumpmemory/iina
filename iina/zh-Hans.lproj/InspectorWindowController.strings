@@ -31,6 +31,9 @@
 /* Class = "NSTextFieldCell"; title = "Hw Decoder:"; ObjectID = "DHh-ne-10f"; */
 "DHh-ne-10f.title" = "硬件解码器:";
 
+/* Class = "NSTextFieldCell"; title = "Primaries:"; ObjectID = "mLo-Wc-BoO"; */
+"mLo-Wc-BoO.title" = "色域:";
+
 /* Class = "NSWindow"; title = "Inspector"; ObjectID = "F0z-JX-Cv5"; */
 "F0z-JX-Cv5.title" = "检查器";
 
