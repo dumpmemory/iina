@@ -135,16 +135,7 @@ class InspectorWindowController: NSWindowController, NSTableViewDelegate, NSTabl
 
         let duration = controller.getDouble(MPVProperty.duration)
         self.durationField.stringValue = VideoTime(duration).stringRepresentation
-        
-        let primaries = controller.getString(MPVProperty.videoParamsPrimaries) ?? "unknown"
-        switch (primaries) {
-        case "bt.2020": fallthrough;
-        case "dci-p3": fallthrough;
-        case "display-p3":
-          self.vprimariesField.stringValue = primaries + " (HDR)";
-        default:
-          self.vprimariesField.stringValue = primaries + " (SDR)";
-        }
+        self.vprimariesField.stringValue = "\(controller.getString(MPVProperty.videoParamsPrimaries) ?? "?") / \(controller.getString(MPVProperty.videoParamsGamma) ?? "?") (\(controller.getDouble(MPVProperty.videoParamsSigPeak) > 1 ? "H" : "S")DR)"
 
         let vwidth = controller.getInt(MPVProperty.width)
         let vheight = controller.getInt(MPVProperty.height)
