@@ -237,14 +237,10 @@ class VideoView: NSView {
       Logger.log("HDR: HDR video was found but the display does not support EDR mode");
       return false;
     }
-    Logger.log("HDR: Will activate HDR color space instead of using ICC profile");
-
-    self.wantsExtendedDynamicRangeOpenGLSurface = true
-    videoLayer.wantsExtendedDynamicRangeContent = true
     
     var name: CFString? = nil;
     switch primaries {
-    case "displayp3":
+    case "display-p3":
       switch transfer {
       case "pq":
         if #available(macOS 10.15.4, *) {
@@ -258,7 +254,7 @@ class VideoView: NSView {
         name = CGColorSpace.displayP3
       }
       
-    case "bt2020": // deprecated
+    case "bt.2020": // deprecated
       switch transfer {
       case "pq":
         if #available(macOS 11.0, *) {
@@ -276,23 +272,22 @@ class VideoView: NSView {
         name = CGColorSpace.itur_2020
       }
       
-    // SDR? Should not go here
-    case "dcip3":
+    case "dci-p3":
       name = CGColorSpace.dcip3
-    case "bt709":
-      name = CGColorSpace.itur_709;
       
-    // These values are not detected in FFmpegController, but I still list them here
-    case "srgb":
-      name = CGColorSpace.sRGB
     default:
       Logger.log("HDR: Unknown HDR color space information transfer=\(transfer) primaries=\(primaries)");
       return false;
     }
     
+    Logger.log("HDR: Will activate HDR color space instead of using ICC profile");
+
+    self.wantsExtendedDynamicRangeOpenGLSurface = true
+    videoLayer.wantsExtendedDynamicRangeContent = true
+    
     videoLayer.colorspace = CGColorSpace(name: name!)
     player.mpv.setString(MPVOption.GPURendererOptions.targetTrc, transfer)
-    player.mpv.setString(MPVOption.GPURendererOptions.targetPrim, "bt.2020") // We only support AVCOL_PRI_BT2020, see FFmpegController
+    player.mpv.setString(MPVOption.GPURendererOptions.targetPrim, primaries == "display-p3" ? "bt.2020" : primaries) // MPV doesn't support Display P3
     // videoLayer.edrMetadata = CAEDRMetadata.hdr10(minLuminance: min_luminance, maxLuminance: max_luminance, opticalOutputScale: 100); // OpenGL layer doesn't support edrMetadata
     return true;
   }
