@@ -39,7 +39,7 @@ class VideoView: NSView {
   var currentDisplay: UInt32?
 
   var pendingRedrawAfterEnteringPIP = false;
-  
+
   // HDR
   var hdrMetadata: (primaries: String?, transfer: String?, max_luminance: Float?, min_luminance: Float?)?;
 
@@ -224,19 +224,22 @@ class VideoView: NSView {
       actualFps = 60;
     }
     player.mpv.setDouble(MPVOption.Video.overrideDisplayFps, actualFps)
-    
+
     refreshEdrMode()
   }
-  
+
   // HDR
   func refreshEdrMode() {
     guard let displayId = currentDisplay, let meta = hdrMetadata else { return };
-    if !requestEdrMode(meta.primaries, meta.transfer, meta.max_luminance, meta.min_luminance) {
-      setICCProfile(displayId)
+    let edrEnabled = requestEdrMode(meta.primaries, meta.transfer, meta.max_luminance, meta.min_luminance)
+    let edrAvailable = edrEnabled != false
+    if player.info.hdrAvailable != edrAvailable {
+      player.mainWindow.quickSettingView.pleaseChangeHdrAvailable(available: edrAvailable)
     }
+    if edrEnabled != true { setICCProfile(displayId) }
   }
-  
-  func requestEdrMode(_ primaries: String?, _ transfer: String?, _ max_luminance: Float?, _ min_luminance: Float?) -> Bool {
+
+  func requestEdrMode(_ primaries: String?, _ transfer: String?, _ max_luminance: Float?, _ min_luminance: Float?) -> Bool? {
     guard let transfer = transfer, let primaries = primaries else {
       // SDR content
       return false;
@@ -245,7 +248,7 @@ class VideoView: NSView {
       Logger.log("HDR: HDR video was found but the display does not support EDR mode");
       return false;
     }
-    
+
     var name: CFString? = nil;
     switch primaries {
     case "display-p3":
@@ -261,7 +264,7 @@ class VideoView: NSView {
       default:
         name = CGColorSpace.displayP3
       }
-      
+
     case "bt.2020": // deprecated
       switch transfer {
       case "pq":
@@ -279,17 +282,19 @@ class VideoView: NSView {
       default:
         name = CGColorSpace.itur_2020
       }
-      
+
     case "dci-p3":
       name = CGColorSpace.dcip3
-      
+
     default:
       Logger.log("HDR: Unknown HDR color space information transfer=\(transfer) primaries=\(primaries)");
       return false;
     }
-    
+
+    if (!player.info.hdrEnabled) { return nil }
+
     Logger.log("HDR: Will activate HDR color space instead of using ICC profile");
-    
+
     videoLayer.colorspace = CGColorSpace(name: name!)
     player.mpv.setString(MPVOption.GPURendererOptions.iccProfile, "")
     player.mpv.setString(MPVOption.GPURendererOptions.targetTrc, transfer)
