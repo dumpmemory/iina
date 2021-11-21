@@ -39,6 +39,9 @@ class VideoView: NSView {
   var currentDisplay: UInt32?
 
   var pendingRedrawAfterEnteringPIP = false;
+  
+  // HDR
+  var hdrMetadata: (primaries: String?, transfer: String?, max_luminance: Float?, min_luminance: Float?)?;
 
   // MARK: - Attributes
 
@@ -63,6 +66,7 @@ class VideoView: NSView {
     // other settings
     autoresizingMask = [.width, .height]
     wantsBestResolutionOpenGLSurface = true
+    wantsExtendedDynamicRangeOpenGLSurface = true
 
     // dragging init
     registerForDraggedTypes([.nsFilenames, .nsURL, .string])
@@ -196,9 +200,8 @@ class VideoView: NSView {
   func updateDisplayLink() {
     guard let window = window, let link = link, let screen = window.screen else { return }
     let displayId = screen.deviceDescription[NSDeviceDescriptionKey("NSScreenNumber")] as! UInt32
-    if (currentDisplay == displayId) {
-      return
-    }
+    if (currentDisplay == displayId) { return }
+    currentDisplay = displayId
 
     CVDisplayLinkSetCurrentCGDisplay(link, displayId)
     let actualData = CVDisplayLinkGetActualOutputVideoRefreshPeriod(link)
@@ -221,14 +224,19 @@ class VideoView: NSView {
       actualFps = 60;
     }
     player.mpv.setDouble(MPVOption.Video.overrideDisplayFps, actualFps)
-
-    setICCProfile(displayId)
-    currentDisplay = displayId
+    
+    refreshEdrMode()
   }
   
   // HDR
-  func requestEdrMode() -> Bool {
-    let (primaries, transfer, max_luminance, min_luminance) = player.hdrMetadata;
+  func refreshEdrMode() {
+    guard let displayId = currentDisplay, let meta = hdrMetadata else { return };
+    if !requestEdrMode(meta.primaries, meta.transfer, meta.max_luminance, meta.min_luminance) {
+      setICCProfile(displayId)
+    }
+  }
+  
+  func requestEdrMode(_ primaries: String?, _ transfer: String?, _ max_luminance: Float?, _ min_luminance: Float?) -> Bool {
     guard let transfer = transfer, let primaries = primaries else {
       // SDR content
       return false;
@@ -281,11 +289,9 @@ class VideoView: NSView {
     }
     
     Logger.log("HDR: Will activate HDR color space instead of using ICC profile");
-
-    self.wantsExtendedDynamicRangeOpenGLSurface = true
-    videoLayer.wantsExtendedDynamicRangeContent = true
     
     videoLayer.colorspace = CGColorSpace(name: name!)
+    player.mpv.setString(MPVOption.GPURendererOptions.iccProfile, "")
     player.mpv.setString(MPVOption.GPURendererOptions.targetTrc, transfer)
     player.mpv.setString(MPVOption.GPURendererOptions.targetPrim, primaries)
     // videoLayer.edrMetadata = CAEDRMetadata.hdr10(minLuminance: min_luminance, maxLuminance: max_luminance, opticalOutputScale: 100); // OpenGL layer doesn't support edrMetadata
@@ -293,8 +299,6 @@ class VideoView: NSView {
   }
 
   func setICCProfile(_ displayId: UInt32) {
-    if requestEdrMode() { return }
-    
     typealias ProfileData = (uuid: CFUUID, profileUrl: URL?)
     guard let uuid = CGDisplayCreateUUIDFromDisplayID(displayId)?.takeRetainedValue() else { return }
 
@@ -319,6 +323,7 @@ class VideoView: NSView {
     if let iccProfilePath = argResult.profileUrl?.path, FileManager.default.fileExists(atPath: iccProfilePath) {
       player.mpv.setString(MPVOption.GPURendererOptions.iccProfile, iccProfilePath)
     }
+    videoLayer.colorspace = window?.screen?.colorSpace?.cgColorSpace;
   }
 }
 

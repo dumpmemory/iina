@@ -118,9 +118,6 @@ class PlayerCore: NSObject {
   var miniPlayer: MiniPlayerWindowController!
 
   var mpv: MPVController!
-  
-  // HDR
-  var hdrMetadata: (primaries: String?, transfer: String?, max_luminance: Float?, min_luminance: Float?);
 
   lazy var ffmpegController: FFmpegController = {
     let controller = FFmpegController()
@@ -290,11 +287,11 @@ class PlayerCore: NSObject {
   }
 
   // HDR
-  private func importFileColorSpace( path: String )
+  private func importFileColorSpace(_ path: String) -> (primaries: String?, transfer: String?, max_luminance: Float?, min_luminance: Float?)
   {
-    guard let colorspaceData = FFmpegController.getColorSpaceMetadata(forFile: path) else { return }
-
     var result: (primaries: String?, transfer: String?, max_luminance: Float?, min_luminance: Float?)
+    guard let colorspaceData = FFmpegController.getColorSpaceMetadata(forFile: path) else { return result }
+
     colorspaceData.forEach { (k, v) in
       switch k as? String {
       case "primaries":
@@ -310,11 +307,10 @@ class PlayerCore: NSObject {
       }
     }
     
-    self.hdrMetadata = result
-
-    Logger.log("Received color space metadata for HDR activation: \(result)")
+    Logger.log("HDR: Received color space metadata for HDR activation: \(result)")
+    
+    return result;
   }
-
 
   private func openMainWindow(path: String, url: URL, isNetwork: Bool) {
     Logger.log("Opening \(path) in main window", subsystem: subsystem)
@@ -323,9 +319,6 @@ class PlayerCore: NSObject {
     info.currentFolder = nil
     info.isNetworkResource = isNetwork
     
-    // HDR
-    self.importFileColorSpace(path: path)
-
     let isFirstLoad = !mainWindow.loaded
     let _ = mainWindow.window
     initialWindow.close()
@@ -341,6 +334,10 @@ class PlayerCore: NSObject {
       mainWindow.showWindow(nil)
       mainWindow.windowDidOpen()
     }
+    
+    // HDR
+    mainWindow.videoView.hdrMetadata = importFileColorSpace(path)
+    mainWindow.videoView.refreshEdrMode()
     
     // Send load file command
     info.fileLoading = true
