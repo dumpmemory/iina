@@ -1103,6 +1103,7 @@ class MainWindowController: PlayerWindowController {
       player.savePlaybackPosition()
       player.stop()
       videoView.stopDisplayLink()
+      videoView.videoLayer.colorspace = nil
     }
     player.info.currentFolder = nil
     player.info.matchedSubs.removeAll()
