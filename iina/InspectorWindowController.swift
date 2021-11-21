@@ -44,6 +44,7 @@ class InspectorWindowController: NSWindowController, NSTableViewDelegate, NSTabl
   @IBOutlet weak var abitrateField: NSTextField!
   @IBOutlet weak var asamplerateField: NSTextField!
 
+  @IBOutlet weak var filePrimariesField: NSTextField!
   @IBOutlet weak var trackIdField: NSTextField!
   @IBOutlet weak var trackDefaultField: NSTextField!
   @IBOutlet weak var trackForcedField: NSTextField!
@@ -135,7 +136,6 @@ class InspectorWindowController: NSWindowController, NSTableViewDelegate, NSTabl
 
         let duration = controller.getDouble(MPVProperty.duration)
         self.durationField.stringValue = VideoTime(duration).stringRepresentation
-        self.vprimariesField.stringValue = "\(controller.getString(MPVProperty.videoParamsPrimaries) ?? "?") / \(controller.getString(MPVProperty.videoParamsGamma) ?? "?") (\(controller.getDouble(MPVProperty.videoParamsSigPeak) > 1 ? "H" : "S")DR)"
 
         let vwidth = controller.getInt(MPVProperty.width)
         let vheight = controller.getInt(MPVProperty.height)
@@ -143,6 +143,12 @@ class InspectorWindowController: NSWindowController, NSTableViewDelegate, NSTabl
 
         let fileSize = controller.getInt(MPVProperty.fileSize)
         self.fileSizeField.stringValue = "\(FloatingPointByteCountFormatter.string(fromByteCount: fileSize))B"
+        
+        let sigPeak = controller.getDouble(MPVProperty.videoParamsSigPeak);
+        self.filePrimariesField.stringValue = sigPeak > 0
+          ? "\(controller.getString(MPVProperty.videoParamsPrimaries) ?? "?") / \(controller.getString(MPVProperty.videoParamsGamma) ?? "?") (\(sigPeak > 1 ? "H" : "S")DR)"
+          : "N/A";
+        self.setLabelColor(self.filePrimariesField, by: sigPeak > 0)
 
         // track list
 
@@ -170,7 +176,6 @@ class InspectorWindowController: NSWindowController, NSTableViewDelegate, NSTabl
         }
         self.trackPopup.selectItem(at: 0)
         self.updateTrack()
-
       }
 
       let vbitrate = controller.getInt(MPVProperty.videoBitrate)
@@ -194,6 +199,9 @@ class InspectorWindowController: NSWindowController, NSTableViewDelegate, NSTabl
         v.stringValue = value ?? "N/A"
         self.setLabelColor(v, by: value != nil)
       }
+      
+      let colorspace = PlayerCore.lastActive.mainWindow.videoView.videoLayer.colorspace?.name;
+      self.vprimariesField.stringValue = colorspace == nil ? "Audo (SDR)" : String(colorspace!) + " (HDR)"
     }
   }
 
@@ -214,7 +222,7 @@ class InspectorWindowController: NSWindowController, NSTableViewDelegate, NSTabl
     setLabelColor(trackForcedField, by: track.isForced)
     setLabelColor(trackSelectedField, by: track.isSelected)
     setLabelColor(trackExternalField, by: track.isExternal)
-
+    
     let strProperties: [(String?, NSTextField)] = [
       (track.srcId?.description, trackSourceIdField),
       (track.title, trackTitleField),

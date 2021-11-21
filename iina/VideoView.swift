@@ -323,7 +323,7 @@ class VideoView: NSView {
     if let iccProfilePath = argResult.profileUrl?.path, FileManager.default.fileExists(atPath: iccProfilePath) {
       player.mpv.setString(MPVOption.GPURendererOptions.iccProfile, iccProfilePath)
     }
-    videoLayer.colorspace = window?.screen?.colorSpace?.cgColorSpace;
+    videoLayer.colorspace = nil;
   }
 }
 
