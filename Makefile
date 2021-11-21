@@ -1,3 +1,5 @@
+build: clean archive dmg
+
 depends:
 	brew install --build-from-source ffmpeg-iina
 	brew install --build-from-source mpv-iina
