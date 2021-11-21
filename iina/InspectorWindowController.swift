@@ -200,8 +200,13 @@ class InspectorWindowController: NSWindowController, NSTableViewDelegate, NSTabl
         self.setLabelColor(v, by: value != nil)
       }
       
-      let colorspace = PlayerCore.lastActive.mainWindow.videoView.videoLayer.colorspace?.name;
-      self.vprimariesField.stringValue = colorspace == nil ? "Unspecified (SDR)" : String(colorspace!) + " (HDR)"
+      if controller.fileLoaded {
+        let colorspace = PlayerCore.lastActive.mainWindow.videoView.videoLayer.colorspace?.name;
+        self.vprimariesField.stringValue = colorspace == nil ? "Unspecified (SDR)" : String(colorspace!) + " (HDR)"
+      } else {
+        self.vprimariesField.stringValue = "N/A"
+      }
+      self.setLabelColor(self.vprimariesField, by: controller.fileLoaded)
     }
   }
 
