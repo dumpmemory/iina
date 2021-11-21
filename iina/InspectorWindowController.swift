@@ -201,7 +201,7 @@ class InspectorWindowController: NSWindowController, NSTableViewDelegate, NSTabl
       }
       
       let colorspace = PlayerCore.lastActive.mainWindow.videoView.videoLayer.colorspace?.name;
-      self.vprimariesField.stringValue = colorspace == nil ? "Audo (SDR)" : String(colorspace!) + " (HDR)"
+      self.vprimariesField.stringValue = colorspace == nil ? "Unspecified (SDR)" : String(colorspace!) + " (HDR)"
     }
   }
 
