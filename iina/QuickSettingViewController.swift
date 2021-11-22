@@ -212,9 +212,11 @@ class QuickSettingViewController: NSViewController, NSTableViewDataSource, NSTab
     }
     hdrSwitch.isEnabled = player.info.hdrAvailable
     hdrSwitch.checked = player.info.hdrAvailable && player.info.hdrEnabled
-    hdrSwitch.action = {
-      self.player.info.hdrEnabled = $0
-      self.player.mainWindow.videoView.refreshEdrMode()
+    if #available(macOS 10.15, *) {
+      hdrSwitch.action = {
+        self.player.info.hdrEnabled = $0
+        self.player.mainWindow.videoView.refreshEdrMode()
+      }
     }
 
     let speed = player.mpv.getDouble(MPVOption.PlaybackControl.speed)

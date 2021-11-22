@@ -336,8 +336,10 @@ class PlayerCore: NSObject {
     }
     
     // HDR
-    mainWindow.videoView.hdrMetadata = importFileColorSpace(path)
-    mainWindow.videoView.refreshEdrMode()
+    if #available(macOS 10.15, *) {
+      mainWindow.videoView.hdrMetadata = importFileColorSpace(path)
+      mainWindow.videoView.refreshEdrMode()
+    }
     
     // Send load file command
     info.fileLoading = true

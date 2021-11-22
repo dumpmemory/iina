@@ -225,10 +225,15 @@ class VideoView: NSView {
     }
     player.mpv.setDouble(MPVOption.Video.overrideDisplayFps, actualFps)
 
-    refreshEdrMode()
+    if #available(macOS 10.15, *) {
+      refreshEdrMode()
+    } else {
+      setICCProfile(displayId)
+    }
   }
 
   // HDR
+  @available(macOS 10.15, *)
   func refreshEdrMode() {
     guard let displayId = currentDisplay, let meta = hdrMetadata else { return };
     let edrEnabled = requestEdrMode(meta.primaries, meta.transfer, meta.max_luminance, meta.min_luminance)
@@ -239,6 +244,7 @@ class VideoView: NSView {
     if edrEnabled != true { setICCProfile(displayId) }
   }
 
+  @available(macOS 10.15, *)
   func requestEdrMode(_ primaries: String?, _ transfer: String?, _ max_luminance: Float?, _ min_luminance: Float?) -> Bool? {
     guard let transfer = transfer, let primaries = primaries else {
       // SDR content
