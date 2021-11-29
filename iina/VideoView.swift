@@ -232,8 +232,44 @@ class VideoView: NSView {
     }
   }
 
-  // HDR
-  @available(macOS 10.15, *)
+  func setICCProfile(_ displayId: UInt32) {
+    typealias ProfileData = (uuid: CFUUID, profileUrl: URL?)
+    guard let uuid = CGDisplayCreateUUIDFromDisplayID(displayId)?.takeRetainedValue() else { return }
+
+    var argResult: ProfileData = (uuid, nil)
+    withUnsafeMutablePointer(to: &argResult) { data in
+      ColorSyncIterateDeviceProfiles({ (dict: CFDictionary?, ptr: UnsafeMutableRawPointer?) -> Bool in
+        if let info = dict as? [String: Any], let current = info["DeviceProfileIsCurrent"] as? Int {
+          let deviceID = info["DeviceID"] as! CFUUID
+          let ptr = ptr!.bindMemory(to: ProfileData.self, capacity: 1)
+          let uuid = ptr.pointee.uuid
+
+          if current == 1, deviceID == uuid {
+            let profileURL = info["DeviceProfileURL"] as! URL
+            ptr.pointee.profileUrl = profileURL
+            return false
+          }
+        }
+        return true
+      }, data)
+    }
+
+    if let iccProfilePath = argResult.profileUrl?.path, FileManager.default.fileExists(atPath: iccProfilePath) {
+      player.mpv.setString(MPVOption.GPURendererOptions.iccProfile, iccProfilePath)
+    }
+    videoLayer.colorspace = nil;
+  }
+}
+
+// MARK: - HDR
+
+@available(macOS 10.15, *)
+extension VideoView {
+  func requestHdrModeForFile(_ path: String) {
+    hdrMetadata = importFileColorSpace(path)
+    refreshEdrMode()
+  }
+
   func refreshEdrMode() {
     guard let displayId = currentDisplay, let meta = hdrMetadata else { return };
     let edrEnabled = requestEdrMode(meta.primaries, meta.transfer, meta.max_luminance, meta.min_luminance)
@@ -244,7 +280,6 @@ class VideoView: NSView {
     if edrEnabled != true { setICCProfile(displayId) }
   }
 
-  @available(macOS 10.15, *)
   func requestEdrMode(_ primaries: String?, _ transfer: String?, _ max_luminance: Float?, _ min_luminance: Float?) -> Bool? {
     guard let transfer = transfer, let primaries = primaries else {
       // SDR content
@@ -309,32 +344,29 @@ class VideoView: NSView {
     return true;
   }
 
-  func setICCProfile(_ displayId: UInt32) {
-    typealias ProfileData = (uuid: CFUUID, profileUrl: URL?)
-    guard let uuid = CGDisplayCreateUUIDFromDisplayID(displayId)?.takeRetainedValue() else { return }
+  private func importFileColorSpace(_ path: String) -> (primaries: String?, transfer: String?, max_luminance: Float?, min_luminance: Float?)
+  {
+    var result: (primaries: String?, transfer: String?, max_luminance: Float?, min_luminance: Float?)
+    guard let colorspaceData = FFmpegController.getColorSpaceMetadata(forFile: path) else { return result }
 
-    var argResult: ProfileData = (uuid, nil)
-    withUnsafeMutablePointer(to: &argResult) { data in
-      ColorSyncIterateDeviceProfiles({ (dict: CFDictionary?, ptr: UnsafeMutableRawPointer?) -> Bool in
-        if let info = dict as? [String: Any], let current = info["DeviceProfileIsCurrent"] as? Int {
-          let deviceID = info["DeviceID"] as! CFUUID
-          let ptr = ptr!.bindMemory(to: ProfileData.self, capacity: 1)
-          let uuid = ptr.pointee.uuid
-
-          if current == 1, deviceID == uuid {
-            let profileURL = info["DeviceProfileURL"] as! URL
-            ptr.pointee.profileUrl = profileURL
-            return false
-          }
-        }
-        return true
-      }, data)
+    colorspaceData.forEach { (k, v) in
+      switch k as? String {
+      case "primaries":
+        result.primaries = v as? String
+      case "color-trc":
+        result.transfer = v as? String
+      case "max_luminance":
+        result.max_luminance = (v as? NSNumber)?.floatValue
+      case "min_luminance":
+        result.min_luminance = (v as? NSNumber)?.floatValue
+      default:
+        break
+      }
     }
 
-    if let iccProfilePath = argResult.profileUrl?.path, FileManager.default.fileExists(atPath: iccProfilePath) {
-      player.mpv.setString(MPVOption.GPURendererOptions.iccProfile, iccProfilePath)
-    }
-    videoLayer.colorspace = nil;
+    Logger.log("HDR: Received color space metadata for HDR activation: \(result)")
+
+    return result;
   }
 }
 

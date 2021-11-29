@@ -286,32 +286,6 @@ class PlayerCore: NSObject {
     }
   }
 
-  // HDR
-  private func importFileColorSpace(_ path: String) -> (primaries: String?, transfer: String?, max_luminance: Float?, min_luminance: Float?)
-  {
-    var result: (primaries: String?, transfer: String?, max_luminance: Float?, min_luminance: Float?)
-    guard let colorspaceData = FFmpegController.getColorSpaceMetadata(forFile: path) else { return result }
-
-    colorspaceData.forEach { (k, v) in
-      switch k as? String {
-      case "primaries":
-        result.primaries = v as? String
-      case "color-trc":
-        result.transfer = v as? String
-      case "max_luminance":
-        result.max_luminance = (v as? NSNumber)?.floatValue
-      case "min_luminance":
-        result.min_luminance = (v as? NSNumber)?.floatValue
-      default:
-        break
-      }
-    }
-    
-    Logger.log("HDR: Received color space metadata for HDR activation: \(result)")
-    
-    return result;
-  }
-
   private func openMainWindow(path: String, url: URL, isNetwork: Bool) {
     Logger.log("Opening \(path) in main window", subsystem: subsystem)
     info.currentURL = url
@@ -333,12 +307,6 @@ class PlayerCore: NSObject {
       }
       mainWindow.showWindow(nil)
       mainWindow.windowDidOpen()
-    }
-    
-    // HDR
-    if #available(macOS 10.15, *) {
-      mainWindow.videoView.hdrMetadata = importFileColorSpace(path)
-      mainWindow.videoView.refreshEdrMode()
     }
     
     // Send load file command
@@ -1136,12 +1104,12 @@ class PlayerCore: NSObject {
 
   // MARK: - Listeners
 
-  func fileStarted() {
+  func fileStarted(path: String) {
     Logger.log("File started", subsystem: subsystem)
     info.justStartedFile = true
     info.disableOSDForFileLoading = true
     currentMediaIsAudio = .unknown
-    guard let path = mpv.getString(MPVProperty.path) else { return }
+    
     info.currentURL = path.contains("://") ?
       URL(string: path.addingPercentEncoding(withAllowedCharacters: .urlAllowed) ?? path) :
       URL(fileURLWithPath: path)
@@ -1149,6 +1117,10 @@ class PlayerCore: NSObject {
 
     if #available(OSX 10.13, *), RemoteCommandController.useSystemMediaControl {
       NowPlayingInfoManager.updateInfo(withTitle: true)
+    }
+
+    if #available(macOS 10.15, *), !info.isNetworkResource {
+      mainWindow.videoView.requestHdrModeForFile(path)
     }
 
     // Auto load
