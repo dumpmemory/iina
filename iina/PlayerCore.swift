@@ -1119,10 +1119,6 @@ class PlayerCore: NSObject {
       NowPlayingInfoManager.updateInfo(withTitle: true)
     }
 
-    if #available(macOS 10.15, *), !info.isNetworkResource {
-      mainWindow.videoView.requestHdrModeForFile(path)
-    }
-
     // Auto load
     backgroundQueueTicket += 1
     let shouldAutoLoadFiles = info.shouldAutoLoadFiles
@@ -1242,6 +1238,14 @@ class PlayerCore: NSObject {
           }
         }
       }
+    }
+  }
+
+  @available(macOS 10.15, *)
+  func refreshEdrMode() {
+    guard mainWindow.loaded else { return }
+    DispatchQueue.main.async {
+      self.mainWindow.videoView.refreshEdrMode()
     }
   }
 
