@@ -91,7 +91,6 @@ class PlaybackInfo {
     }
   }
 
-  var justLaunched: Bool = true
   var justStartedFile: Bool = false
   var justOpenedFile: Bool = false
   var shouldAutoLoadFiles: Bool = false
