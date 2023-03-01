@@ -19,6 +19,8 @@
 
 #import <Availability.h>
 
+extern CFDictionaryRef _Nullable CoreDisplay_DisplayCreateInfoDictionary(CGDirectDisplayID display);
+
 #pragma mark - PIP.framework
 
 NS_ASSUME_NONNULL_BEGIN

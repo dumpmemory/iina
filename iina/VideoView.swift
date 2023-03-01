@@ -372,7 +372,10 @@ extension VideoView {
     mpv.setFlag(MPVOption.Screenshot.screenshotTagColorspace, true)
 
     if Preference.bool(for: .enableToneMapping) {
-      let targetPeak = Preference.integer(for: .toneMappingTargetPeak)
+      var targetPeak = Preference.integer(for: .toneMappingTargetPeak)
+      if targetPeak == 0, let displayInfo = CoreDisplay_DisplayCreateInfoDictionary(currentDisplay!)?.takeRetainedValue() as? [String: AnyObject], let hdrLuminance = displayInfo["ReferencePeakHDRLuminance"] as? Int {
+        targetPeak = hdrLuminance
+      }
       let algorithm = Preference.ToneMappingAlgorithmOption(rawValue: Preference.integer(for: .toneMappingAlgorithm))!.mpvString
 
       Logger.log("Will enable tone mapping target-peak=\(targetPeak) algorithm=\(algorithm)", subsystem: hdrSubsystem);

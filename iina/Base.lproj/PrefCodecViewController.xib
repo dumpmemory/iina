@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<document type="com.apple.InterfaceBuilder3.Cocoa.XIB" version="3.0" toolsVersion="20037" targetRuntime="MacOSX.Cocoa" propertyAccessControl="none" useAutolayout="YES" customObjectInstantitationMethod="direct">
+<document type="com.apple.InterfaceBuilder3.Cocoa.XIB" version="3.0" toolsVersion="21507" targetRuntime="MacOSX.Cocoa" propertyAccessControl="none" useAutolayout="YES" customObjectInstantitationMethod="direct">
     <dependencies>
         <deployment identifier="macosx"/>
-        <plugIn identifier="com.apple.InterfaceBuilder.CocoaPlugin" version="20037"/>
+        <plugIn identifier="com.apple.InterfaceBuilder.CocoaPlugin" version="21507"/>
         <capability name="documents saved in the Xcode 8 format" minToolsVersion="8.0"/>
     </dependencies>
     <objects>
@@ -30,11 +30,11 @@
         </customView>
         <userDefaultsController representsSharedInstance="YES" id="pxc-7C-SGP"/>
         <customView id="gZf-gF-XoY">
-            <rect key="frame" x="0.0" y="0.0" width="444" height="498"/>
+            <rect key="frame" x="0.0" y="0.0" width="444" height="526"/>
             <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
             <subviews>
                 <textField identifier="SectionTitleVideo" horizontalHuggingPriority="251" verticalHuggingPriority="750" allowsCharacterPickerTouchBarItem="YES" translatesAutoresizingMaskIntoConstraints="NO" id="2BH-mP-kfr">
-                    <rect key="frame" x="-2" y="474" width="46" height="16"/>
+                    <rect key="frame" x="-2" y="502" width="46" height="16"/>
                     <textFieldCell key="cell" scrollable="YES" lineBreakMode="clipping" sendsActionOnEndEditing="YES" alignment="left" title="Video:" id="m5P-5f-5uo">
                         <font key="font" metaFont="systemBold"/>
                         <color key="textColor" name="labelColor" catalog="System" colorSpace="catalog"/>
@@ -42,7 +42,7 @@
                     </textFieldCell>
                 </textField>
                 <textField horizontalHuggingPriority="251" verticalHuggingPriority="750" allowsCharacterPickerTouchBarItem="YES" translatesAutoresizingMaskIntoConstraints="NO" id="paR-ax-h5M">
-                    <rect key="frame" x="118" y="474" width="122" height="16"/>
+                    <rect key="frame" x="118" y="502" width="122" height="16"/>
                     <textFieldCell key="cell" scrollable="YES" lineBreakMode="clipping" sendsActionOnEndEditing="YES" title="Number of threads:" id="50C-1R-wlJ">
                         <font key="font" metaFont="system"/>
                         <color key="textColor" name="labelColor" catalog="System" colorSpace="catalog"/>
@@ -50,7 +50,7 @@
                     </textFieldCell>
                 </textField>
                 <textField verticalHuggingPriority="750" allowsCharacterPickerTouchBarItem="YES" translatesAutoresizingMaskIntoConstraints="NO" id="NZA-64-tXh">
-                    <rect key="frame" x="246" y="471" width="58" height="21"/>
+                    <rect key="frame" x="246" y="499" width="58" height="21"/>
                     <constraints>
                         <constraint firstAttribute="width" constant="58" id="GLI-3U-bmm"/>
                     </constraints>
@@ -71,7 +71,7 @@
                     </connections>
                 </textField>
                 <textField horizontalHuggingPriority="251" verticalHuggingPriority="750" translatesAutoresizingMaskIntoConstraints="NO" id="kas-7q-TbK">
-                    <rect key="frame" x="312" y="474" width="92" height="14"/>
+                    <rect key="frame" x="312" y="502" width="92" height="14"/>
                     <textFieldCell key="cell" controlSize="small" scrollable="YES" lineBreakMode="clipping" sendsActionOnEndEditing="YES" title="Default: 0 (Auto)" id="bxW-np-SGm">
                         <font key="font" metaFont="label" size="11"/>
                         <color key="textColor" name="disabledControlTextColor" catalog="System" colorSpace="catalog"/>
@@ -79,7 +79,7 @@
                     </textFieldCell>
                 </textField>
                 <popUpButton verticalHuggingPriority="750" translatesAutoresizingMaskIntoConstraints="NO" id="EWs-Ib-pVZ">
-                    <rect key="frame" x="243" y="435" width="127" height="25"/>
+                    <rect key="frame" x="243" y="463" width="127" height="25"/>
                     <constraints>
                         <constraint firstAttribute="width" relation="greaterThanOrEqual" constant="120" id="P27-F4-Ogg"/>
                     </constraints>
@@ -100,7 +100,7 @@
                     </connections>
                 </popUpButton>
                 <textField horizontalHuggingPriority="251" verticalHuggingPriority="750" horizontalCompressionResistancePriority="250" translatesAutoresizingMaskIntoConstraints="NO" id="0Re-PY-hmC">
-                    <rect key="frame" x="118" y="424" width="328" height="14"/>
+                    <rect key="frame" x="118" y="452" width="328" height="14"/>
                     <textFieldCell key="cell" controlSize="small" sendsActionOnEndEditing="YES" title="Label" id="n3r-mP-f8V">
                         <font key="font" metaFont="label" size="11"/>
                         <color key="textColor" name="disabledControlTextColor" catalog="System" colorSpace="catalog"/>
@@ -108,7 +108,7 @@
                     </textFieldCell>
                 </textField>
                 <textField horizontalHuggingPriority="251" verticalHuggingPriority="750" translatesAutoresizingMaskIntoConstraints="NO" id="4rB-d2-drE">
-                    <rect key="frame" x="118" y="442" width="122" height="16"/>
+                    <rect key="frame" x="118" y="470" width="122" height="16"/>
                     <textFieldCell key="cell" scrollable="YES" lineBreakMode="clipping" sendsActionOnEndEditing="YES" title="Hardware decoder:" id="nwg-2K-G2G">
                         <font key="font" metaFont="system"/>
                         <color key="textColor" name="labelColor" catalog="System" colorSpace="catalog"/>
@@ -116,7 +116,7 @@
                     </textFieldCell>
                 </textField>
                 <button verticalHuggingPriority="750" translatesAutoresizingMaskIntoConstraints="NO" id="xXS-nP-Chk">
-                    <rect key="frame" x="118" y="395" width="156" height="18"/>
+                    <rect key="frame" x="118" y="423" width="156" height="18"/>
                     <buttonCell key="cell" type="check" title="Force dedicated GPU" bezelStyle="regularSquare" imagePosition="left" state="on" inset="2" id="YUr-aJ-xfC">
                         <behavior key="behavior" changeContents="YES" doesNotDimImage="YES" lightByContents="YES"/>
                         <font key="font" metaFont="system"/>
@@ -126,7 +126,7 @@
                     </connections>
                 </button>
                 <textField horizontalHuggingPriority="251" verticalHuggingPriority="750" horizontalCompressionResistancePriority="250" translatesAutoresizingMaskIntoConstraints="NO" id="40Z-9R-jw0">
-                    <rect key="frame" x="118" y="364" width="328" height="28"/>
+                    <rect key="frame" x="118" y="392" width="328" height="28"/>
                     <textFieldCell key="cell" controlSize="small" sendsActionOnEndEditing="YES" title="Always use the dedicated GPU for rendering (if it exists). This can improve performance but may reduce battery life." id="gCv-sJ-uQJ">
                         <font key="font" metaFont="label" size="11"/>
                         <color key="textColor" name="disabledControlTextColor" catalog="System" colorSpace="catalog"/>
@@ -134,7 +134,7 @@
                     </textFieldCell>
                 </textField>
                 <button verticalHuggingPriority="750" translatesAutoresizingMaskIntoConstraints="NO" id="H9a-N4-xDt">
-                    <rect key="frame" x="118" y="339" width="124" height="18"/>
+                    <rect key="frame" x="118" y="367" width="124" height="18"/>
                     <buttonCell key="cell" type="check" title="Load ICC profile" bezelStyle="regularSquare" imagePosition="left" state="on" inset="2" id="3g4-jW-uJd">
                         <behavior key="behavior" changeContents="YES" doesNotDimImage="YES" lightByContents="YES"/>
                         <font key="font" metaFont="system"/>
@@ -144,7 +144,7 @@
                     </connections>
                 </button>
                 <textField horizontalHuggingPriority="251" verticalHuggingPriority="750" horizontalCompressionResistancePriority="250" translatesAutoresizingMaskIntoConstraints="NO" id="IQ8-K4-5CX">
-                    <rect key="frame" x="118" y="308" width="328" height="28"/>
+                    <rect key="frame" x="118" y="336" width="328" height="28"/>
                     <textFieldCell key="cell" controlSize="small" sendsActionOnEndEditing="YES" title="Load the ICC profile for current display and use it to transform video RGB to screen output. (Only for SDR mode)" id="M2M-of-gjd">
                         <font key="font" metaFont="label" size="11"/>
                         <color key="textColor" name="disabledControlTextColor" catalog="System" colorSpace="catalog"/>
@@ -152,7 +152,7 @@
                     </textFieldCell>
                 </textField>
                 <textField horizontalHuggingPriority="251" verticalHuggingPriority="750" horizontalCompressionResistancePriority="250" translatesAutoresizingMaskIntoConstraints="NO" id="VBh-HJ-Hsl">
-                    <rect key="frame" x="118" y="252" width="328" height="28"/>
+                    <rect key="frame" x="118" y="280" width="328" height="28"/>
                     <textFieldCell key="cell" controlSize="small" sendsActionOnEndEditing="YES" title="Enable HDR mode when playing HDR videos. Uncheck this button if you encounter any issues." id="AF3-Hf-nll">
                         <font key="font" metaFont="label" size="11"/>
                         <color key="textColor" name="disabledControlTextColor" catalog="System" colorSpace="catalog"/>
@@ -160,7 +160,7 @@
                     </textFieldCell>
                 </textField>
                 <button verticalHuggingPriority="750" translatesAutoresizingMaskIntoConstraints="NO" id="jf6-xG-UF1">
-                    <rect key="frame" x="118" y="283" width="200" height="18"/>
+                    <rect key="frame" x="118" y="311" width="200" height="18"/>
                     <buttonCell key="cell" type="check" title="Enable HDR mode by default" bezelStyle="regularSquare" imagePosition="left" state="on" inset="2" id="oMN-7X-c5d">
                         <behavior key="behavior" changeContents="YES" doesNotDimImage="YES" lightByContents="YES"/>
                         <font key="font" metaFont="system"/>
@@ -170,7 +170,7 @@
                     </connections>
                 </button>
                 <textField horizontalHuggingPriority="251" verticalHuggingPriority="750" allowsCharacterPickerTouchBarItem="YES" translatesAutoresizingMaskIntoConstraints="NO" id="nuY-oY-ief">
-                    <rect key="frame" x="118" y="102" width="80" height="16"/>
+                    <rect key="frame" x="118" y="130" width="80" height="16"/>
                     <textFieldCell key="cell" scrollable="YES" lineBreakMode="clipping" sendsActionOnEndEditing="YES" title="Target peak:" id="xVk-OA-kOf">
                         <font key="font" metaFont="system"/>
                         <color key="textColor" name="labelColor" catalog="System" colorSpace="catalog"/>
@@ -178,7 +178,7 @@
                     </textFieldCell>
                 </textField>
                 <textField verticalHuggingPriority="750" allowsCharacterPickerTouchBarItem="YES" translatesAutoresizingMaskIntoConstraints="NO" id="w2K-eR-xqK">
-                    <rect key="frame" x="204" y="99" width="58" height="21"/>
+                    <rect key="frame" x="204" y="127" width="58" height="21"/>
                     <constraints>
                         <constraint firstAttribute="width" constant="58" id="eGm-nT-ceU"/>
                     </constraints>
@@ -199,7 +199,7 @@
                     </connections>
                 </textField>
                 <textField horizontalHuggingPriority="251" verticalHuggingPriority="750" allowsCharacterPickerTouchBarItem="YES" translatesAutoresizingMaskIntoConstraints="NO" id="bL4-aH-JLz">
-                    <rect key="frame" x="264" y="102" width="26" height="16"/>
+                    <rect key="frame" x="264" y="130" width="26" height="16"/>
                     <textFieldCell key="cell" scrollable="YES" lineBreakMode="clipping" sendsActionOnEndEditing="YES" title="nits" id="baO-xy-7hD">
                         <font key="font" metaFont="system"/>
                         <color key="textColor" name="labelColor" catalog="System" colorSpace="catalog"/>
@@ -240,7 +240,7 @@
                     </textFieldCell>
                 </textField>
                 <button verticalHuggingPriority="750" translatesAutoresizingMaskIntoConstraints="NO" id="Ty3-Qg-ysu">
-                    <rect key="frame" x="118" y="227" width="154" height="18"/>
+                    <rect key="frame" x="118" y="255" width="154" height="18"/>
                     <buttonCell key="cell" type="check" title="Enable tone mapping" bezelStyle="regularSquare" imagePosition="left" state="on" inset="2" id="a5Y-gU-JTj">
                         <behavior key="behavior" changeContents="YES" doesNotDimImage="YES" lightByContents="YES"/>
                         <font key="font" metaFont="system"/>
@@ -251,7 +251,7 @@
                     </connections>
                 </button>
                 <textField horizontalHuggingPriority="251" verticalHuggingPriority="750" horizontalCompressionResistancePriority="250" translatesAutoresizingMaskIntoConstraints="NO" id="oPy-hC-O47">
-                    <rect key="frame" x="118" y="126" width="328" height="98"/>
+                    <rect key="frame" x="118" y="154" width="328" height="98"/>
                     <textFieldCell key="cell" controlSize="small" sendsActionOnEndEditing="YES" id="mNn-cb-IVw">
                         <font key="font" metaFont="label" size="11"/>
                         <string key="title">Map one set of colors to another to approximate the appearance of high-dynamic-range images in a medium that has a more limited dynamic range. ( From Wikipedia )
@@ -262,10 +262,10 @@ Use tone mapping algorithm if you want gamut reduction. For example: playing HDR
                     </textFieldCell>
                 </textField>
                 <textField horizontalHuggingPriority="251" verticalHuggingPriority="750" horizontalCompressionResistancePriority="250" translatesAutoresizingMaskIntoConstraints="NO" id="6Tu-h1-NQu">
-                    <rect key="frame" x="118" y="67" width="328" height="28"/>
+                    <rect key="frame" x="118" y="67" width="328" height="56"/>
                     <textFieldCell key="cell" controlSize="small" sendsActionOnEndEditing="YES" id="aTt-aZ-rjK">
                         <font key="font" metaFont="label" size="11"/>
-                        <string key="title">Maximum luminance supported by your screen
+                        <string key="title">Maximum luminance supported by your screen if set to 0, IINA will try to detect the maximum luminance of current monitor
 Ref: https://mpv.io/manual/master/#options-target-peak</string>
                         <color key="textColor" name="disabledControlTextColor" catalog="System" colorSpace="catalog"/>
                         <color key="backgroundColor" name="controlColor" catalog="System" colorSpace="catalog"/>
