@@ -258,7 +258,7 @@ struct MPVOption {
     static let vdLavcSoftwareFallback = "vd-lavc-software-fallback"
     /** --vd-lavc-film-grain=<auto|cpu|gpu> */
     static let vdLavcFilmGrain = "vd-lavc-film-grain"
-    /** --vd-lavc-dr=<yes|no> */
+    /** --vd-lavc-dr=<auto|yes|no> */
     static let vdLavcDr = "vd-lavc-dr"
     /** --vd-lavc-bitexact */
     static let vdLavcBitexact = "vd-lavc-bitexact"
