@@ -14,7 +14,7 @@ jobs:
       - name: Download dependencies
         run: |
           pwd
-          curl -LO https://nightly.link/iina-plus/homebrew-mpv-iina/actions/runs/3217137862/deps-x86_64.zip
+          curl -LO https://nightly.link/iina-plus/homebrew-mpv-iina/actions/runs/4309887376/deps-x86_64.zip
           unzip -d deps deps-x86_64
 
       - name: Archive
@@ -32,29 +32,29 @@ jobs:
           name: IINA-x86_64
           path: ./iina.tar.xz
 
-  build-arm64:
-    runs-on: self-hosted
+  # build-arm64:
+  #   runs-on: self-hosted
 
-    steps:
-      - uses: actions/checkout@v2
+  #   steps:
+  #     - uses: actions/checkout@v2
 
-      - name: Download dependencies
-        run: |
-          pwd
-          curl -LO https://nightly.link/iina-plus/homebrew-mpv-iina/actions/runs/3217137862/deps-arm64.zip
-          unzip -d deps deps-arm64
+  #     - name: Download dependencies
+  #       run: |
+  #         pwd
+  #         curl -LO https://nightly.link/iina-plus/homebrew-mpv-iina/actions/runs/3217137862/deps-arm64.zip
+  #         unzip -d deps deps-arm64
 
-      - name: Archive
-        run: make archive
+  #     - name: Archive
+  #       run: make archive
 
-      - name: Create tar
-        run: |
-          rm -rf ./IINA.app
-          mv ./archive.xcarchive/Products/Applications/IINA.app .
-          otool -L ./IINA.app/Contents/MacOS/IINA
-          tar Jcvf iina.tar.xz ./IINA.app
+  #     - name: Create tar
+  #       run: |
+  #         rm -rf ./IINA.app
+  #         mv ./archive.xcarchive/Products/Applications/IINA.app .
+  #         otool -L ./IINA.app/Contents/MacOS/IINA
+  #         tar Jcvf iina.tar.xz ./IINA.app
 
-      - uses: actions/upload-artifact@v2
-        with:
-          name: IINA-arm64
-          path: ./iina.tar.xz
+  #     - uses: actions/upload-artifact@v2
+  #       with:
+  #         name: IINA-arm64
+  #         path: ./iina.tar.xz
