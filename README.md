@@ -57,7 +57,7 @@ You may download prebuilt binaries on Github Action page: https://github.com/iin
 - Apple M1 (aarch64): Artifacts named `IINA-arm64` ( Requires 12.0+ )
 - No universal binaries available
 
-All binaries above are built with `ffmpeg 5.1.1` and `mpv master`.
+All binaries above are built with `ffmpeg 6.0` and `mpv master`.
 
 ## License
 
