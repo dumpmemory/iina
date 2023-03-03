@@ -947,7 +947,7 @@
 		AD63BF7929AEF1A000A63251 /* libswscale.7.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libswscale.7.dylib; path = deps/lib/libswscale.7.dylib; sourceTree = "<group>"; };
 		AD63BF7A29AEF1A000A63251 /* libavcodec.60.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libavcodec.60.dylib; path = deps/lib/libavcodec.60.dylib; sourceTree = "<group>"; };
 		AD70988827E0DD9200BD7795 /* libmpv.2.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libmpv.2.dylib; path = deps/lib/libmpv.2.dylib; sourceTree = "<group>"; };
-		ADD4287E29AF39450057386F /* CoreDisplay.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreDisplay.framework; path = ../../../System/Library/Frameworks/CoreDisplay.framework; sourceTree = "<group>"; };
+		ADD4287E29AF39450057386F /* CoreDisplay.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreDisplay.framework; path = /System/Library/Frameworks/CoreDisplay.framework; sourceTree = "<group>"; };
 		B206FFD82415439600E3B8B7 /* FourCharCode+Extensions.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "FourCharCode+Extensions.swift"; sourceTree = "<group>"; };
 		B2133D69240D8FDA001B6095 /* IINA.sdef */ = {isa = PBXFileReference; lastKnownFileType = text; path = IINA.sdef; sourceTree = "<group>"; };
 		B2133D6C240E07AC001B6095 /* AppDelegate+Scripting.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "AppDelegate+Scripting.swift"; sourceTree = "<group>"; };
