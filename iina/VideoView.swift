@@ -373,8 +373,18 @@ extension VideoView {
 
     if Preference.bool(for: .enableToneMapping) {
       var targetPeak = Preference.integer(for: .toneMappingTargetPeak)
-      if targetPeak == 0, let displayInfo = CoreDisplay_DisplayCreateInfoDictionary(currentDisplay!)?.takeRetainedValue() as? [String: AnyObject], let hdrLuminance = displayInfo["ReferencePeakHDRLuminance"] as? Int {
-        targetPeak = hdrLuminance
+      if targetPeak == 0, let displayInfo = CoreDisplay_DisplayCreateInfoDictionary(currentDisplay!)?.takeRetainedValue() as? [String: AnyObject] {
+        Logger.log("Successfully obtained display info dictionary: \(displayInfo)", subsystem: hdrSubsystem);
+        if let hdrLuminance = displayInfo["ReferencePeakHDRLuminance"] as? Int {
+          Logger.log("Found ReferencePeakHDRLuminance: \(hdrLuminance)", subsystem: hdrSubsystem);
+          targetPeak = hdrLuminance
+        } else if let hdrLuminance = displayInfo["DisplayBacklight"] as? Int {
+          Logger.log("Found DisplayBacklight: \(hdrLuminance)", subsystem: hdrSubsystem);
+          targetPeak = hdrLuminance
+        } else {
+          Logger.log("Didn't find ReferencePeakHDRLuminance or DisplayBacklight, assume HDR400", subsystem: hdrSubsystem);
+          targetPeak = 400
+        }
       }
       let algorithm = Preference.ToneMappingAlgorithmOption(rawValue: Preference.integer(for: .toneMappingAlgorithm))!.mpvString
 
